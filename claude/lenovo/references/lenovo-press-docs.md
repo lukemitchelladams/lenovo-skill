@@ -1,6 +1,6 @@
 # Lenovo Press document index
 
-Product guides live at `https://lenovopress.lenovo.com/<id>` (web page) and `https://lenovopress.lenovo.com/<id>.pdf` (full PDF). A few ids (RAID/HBA reference, SSD portfolio, rail kits, DM Series) are live-database web pages with no PDF.
+Product guides live at `https://lenovopress.lenovo.com/<id>` (web page) and `https://lenovopress.lenovo.com/<id>.pdf` (full PDF). A few ids (RAID/HBA reference, SSD portfolio, rail kits, DM Series) are live-database web pages with no PDF. `docs/crawl_lenovo_press.py` fetches all ~2,200 Lenovo Press articles for a local index.
 
 | id | category | title |
 |---|---|---|

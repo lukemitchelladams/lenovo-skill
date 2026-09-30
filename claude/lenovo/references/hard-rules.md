@@ -9,7 +9,7 @@ These override any inference. Each one was proven against real DCSC exports or L
 - TCE membership is **per MTM, per date**, and it rotates. A part can be TCE on HX650 V4 and not on SR650 V4 in the same week. Product guides and older exports go stale; the live DCSC panel decides.
 - TCE lists are **not monotonic by size**. They have floors as well as ceilings, so never infer that a smaller or larger variant is also eligible. Verified cases: the HX650 V4 CPU floor (8C C5R6 is TCE, 12C C5QQ is not), the 16GB DIMM floor (C0U2 breaks TCE), and the U.2 VA PCIe 5.0 capacity window of 3.2TB to 7.68TB.
 - A rack chassis on the order voids TCE, as does any tied order that holds non-TCE product.
-- TCE is 21 days from order to delivery.
+- TCE timing: DCSC's own message says "10 business day order to ship". Other Lenovo material quotes about 21 days order to delivery. Say which milestone you mean.
 - Customer-facing writing says "Top Choice Express (TCE)". Never "quick-ship".
 
 ## Storage

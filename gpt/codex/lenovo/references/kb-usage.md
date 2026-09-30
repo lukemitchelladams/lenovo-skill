@@ -1,12 +1,32 @@
-# Using the local knowledge base
+# Using the tools
 
-The KB is optional. It is a SQLite file built from **your own** DCSC exports plus the public Lenovo Press guides. Nothing in it ships with this repo. Build it once:
+## Works out of the box (no database, no downloads)
+
+| Command (`python kb/kb.py ...`) | What it answers |
+|---|---|
+| `fact <terms>` | 160+ curated verified facts. **Run this first, every time.** |
+| `rules --fc <FC>` | Every MTM and DCSC section that holds a feature code, with its TCE flag, min/max and withdraw date |
+| `rules <model\|MTM> [--required] [--section <regex>] [--tce]` | DCSC sections for a platform: required and single-entry sections, legal quantities |
+| `dfind <model\|MTM> <regex> [--tce]` | Search the **complete** DCSC option list of an MTM |
+| `gates <regex> [--sev critical]` | DCSC gating messages, the configurator's own rules verbatim (config names stripped) |
+| `models [regex]` | The 265 MTMs in the DCSC rules snapshot |
+| `spec <model\|MTM>` / `spec --list` | Platform limits from Lenovo Press: sockets, DIMM slots and channels, bays, PCIe/OCP, PSU, GPU |
+| `check <bom> [--mtm X] [--nodes N] [--tce] [--raid N] [--workload nutanix]` | 40 deterministic validators on a Lenovo BOM or DCSC export; exits 1 on a block |
+| `match <competitor bom> [--platform "SR650 V4" \| --mtm X] [--nodes N] [--json]` | Competitor BOM (txt, csv, xlsx) to a Lenovo worksheet: platform, up to 3 real feature codes per line with TCE flags, companions, validator run |
+| `compete <competitor model>` / `compete --lenovo <model>` | Lenovo's official competitor map (public, fetched live and cached 24 h) |
+
+The DCSC rules snapshot (`kb/data/dcsc-rules.json.gz`) is dated and captures each MTM's **default** configuration state. `q=[0]` means "not selectable in the default state", not illegal. TCE flags are per section and rotate. It contains no prices and no customer data. Confirm in the live DCSC configurator.
+
+## Your own knowledge base (optional)
+
+The KB is a SQLite file built from **your own** DCSC exports plus the public Lenovo Press guides. Nothing in it ships with this repo. Build it once:
 
 ```bash
 pip install -r requirements.txt
 python kb/refresh.py ~/Downloads ~/Desktop/Configs     # folders that hold your DCSC exports
-python docs/get_lenovo_docs.py                         # ~230 MB of public product guides
-python kb/build_kb_index.py --docs-only                # page-level full-text index
+python docs/get_lenovo_docs.py                         # the 44 key product guides as PDFs (~230 MB)
+python docs/crawl_lenovo_press.py                      # optional: all ~2,200 Lenovo Press articles as text
+python kb/build_kb_index.py                            # facts + page-level doc index + guide part tables
 ```
 
 The KB lives at `kb/dcsc_kb.sqlite` (override with `LENOVO_KB_DB`).
@@ -24,6 +44,7 @@ The KB lives at `kb/dcsc_kb.sqlite` (override with `LENOVO_KB_DB`).
 | `configs [regex]` | List configs. |
 | `cmp <idA> <idB>` | Diff two configs. |
 | `docs <query> [--lp lpNNNN]` | Which Lenovo Press guide and page holds something. |
+| `parts <platform\|lp> <regex>` / `parts --fc <FC>` | Part tables extracted from the product guides: part number, feature code, the guide's TCE column, page |
 | `page <lp> <page>` | One full page of a guide. |
 | `sql "<SELECT ...>"` | Read-only ad-hoc query, capped at 200 rows. |
 

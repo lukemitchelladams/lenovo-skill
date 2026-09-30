@@ -613,4 +613,28 @@ FACTS = [
  "base, AUNP and 5978, and saying Windows/CALs break TCE (SDA9 is in 13 BU1E ST250 V3 exports). BYLX 3.5in 3.84TB MU: lp1803 "
  "p44 and a July catalog crawl say TCE, a later catalog check said not, and no ST250 V3 export has it.",
  "Lenovo Press lp1907 p3/p32/p35, lp1803 p14/p26/p41-44/p53, lp1552 p3-4; DCSC export 2026-09-29", "2026-09-29"),
+
+("sr635-v3-diskless-16c-tce-host",
+ "SR635 V3|DE4200H|DE2000H|Proxmox", "proven",
+ "Diskless 1U AMD 16C TCE host = SR635 V3 + C2AK 9135 + BLK4 (no backplane) + B8P9 + 2x CBSZ; DE4200H base ports are 10/25Gb iSCSI so no HIC is needed",
+ "BU1E export 2026-09-02: SR635 V3 7D9GCTO1WW, BLK4 10x2.5in chassis with no backplane, C2AK EPYC 9135 16C 3.65GHz, BQ26, "
+ "B8P9 + 2x CBSZ 480GB M.2 on 5977 (V3 has no factory M.2 RAID 1; that is V4-only), BNFG 750W x2, 6400 C13-C14, 6x BH9M, B8LA. "
+ "Adding BN2T + BK1H needs the BLKB riser + BLK9 cage. The 960GB M.2 CBT0 is Not TCE on V3. "
+ "PRICE MOVES: CBN9 32GB 6400 RDIMM nearly doubled during September 2026 and CBSZ 480GB M.2 rose about 50%; memory was ~78% "
+ "of a 256GB diskless host. "
+ "DE4200H (lp2071 p5/p7): 2x 10/25Gb iSCSI SFP28 base ports per controller; a TCE build used blank HIC plates. DE drive TCE "
+ "list lp2071 p18-19: 4TB B4C3, 10TB B4C6, 24TB C7XS HDD; 960GB/1.92TB/3.84TB 1DWD SSD; 18TB and all SED/FIPS Not TCE. "
+ "DE2000H SFF Gen2 7Y71 is TCE but needs B4BA HICs. Automated BOM mappers tend to emit placeholder FCs for DE arrays, so build DE in DCSC. "
+ "PRICE-BASIS TRAP: exports priced on a non-US basis carry ~1.7-2.1x the US unit prices; compare a stable part such as "
+ "BN2T or B8LA across exports to spot it before comparing totals.",
+ "DCSC exports 2026-09; Lenovo Press lp2071 p5/p7/p18-19/p24", "2026-09-30"),
 ]
+
+# More facts live in sibling modules so each file stays reviewable:
+#   kb_facts_rules.py  platform, TCE, licensing and support rules
+#   kb_facts_field.py  rules distilled from real competitor-to-Lenovo conversions
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from kb_facts_rules import FACTS as _RULES
+from kb_facts_field import FACTS as _FIELD
+FACTS = FACTS + _RULES + _FIELD

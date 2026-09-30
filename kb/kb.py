@@ -18,6 +18,20 @@ usage:
   python kb.py configs [regex]        list configs
   python kb.py cmp <cfgA> <cfgB>      diff two configs by id
 
+DCSC rules snapshot (ships with the repo, no db needed):
+  python kb.py rules <MTM|model> [--required] [--section <regex>] [--tce]
+  python kb.py rules --fc <FC>        every MTM/section holding a feature code, TCE flag, min/max, legal qty
+  python kb.py dfind <MTM|model> <regex>   search feature descriptions in the rules snapshot
+  python kb.py gates <regex> [--sev critical|warning|normal]   DCSC gating messages
+  python kb.py models [regex]         the 265 MTMs in the snapshot
+
+Build tools:
+  python kb.py check <bom> [--mtm X] [--nodes N] [--workload W]   run the rule validators on a Lenovo BOM
+  python kb.py spec <platform|MTM>    platform limits from Lenovo Press (sockets, DIMMs, bays, slots)
+  python kb.py parts <platform|lp> <regex> | --fc <FC>   part tables extracted from local product guides
+  python kb.py compete <competitor model> | --lenovo <model>   official Lenovo competitor map (live)
+  python kb.py match <competitor BOM file>   competitor BOM -> Lenovo worksheet
+
 no db yet?  python refresh.py <folder holding your DCSC exports>
 """
 import sqlite3, sys, re, os, pathlib
@@ -246,10 +260,21 @@ def cmp(a,b):
     for k in sorted(set(A)&set(B)):
         if A[k][0]!=B[k][0]: print(f"    {k:<7} {A[k][0]:.0f} -> {B[k][0]:.0f}   {A[k][1][:52]}")
 
+# commands served by sibling modules; each gets the full argv (command included)
+MODULES = {"rules": "dcsc_rules", "gates": "dcsc_rules", "models": "dcsc_rules", "dfind": "dcsc_rules",
+           "check": "rules", "spec": "specs", "parts": "press_parts", "compete": "compete", "match": "match"}
+
 if __name__ == "__main__":
     a = sys.argv[1:]
     if not a or a[0] in ("-h", "--help", "help"): print(__doc__); sys.exit()
     c = a[0]
+    if c in MODULES:
+        import importlib
+        try:
+            mod = importlib.import_module(MODULES[c])
+        except ImportError as e:
+            sys.exit(f"{c}: module {MODULES[c]}.py not available ({e})")
+        sys.exit(mod.main(["find"] + a[1:] if c == "dfind" else a) or 0)
     try:
         if   c=="fact":    fact(a[1:])
         elif c=="docs":    docs(a[1:])

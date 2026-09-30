@@ -1,0 +1,12 @@
+*.sqlite
+*.sqlite-*
+kb/dcsc_files.txt
+kb/_zipcache/
+docs/lenovo-press/
+__pycache__/
+*.xlsx
+*.zip
+*.pdf
+.DS_Store
+Thumbs.db
+dist/

@@ -1,0 +1,3 @@
+openpyxl
+# optional: only needed to build the Lenovo Press doc index (build_kb_index.py --docs-only)
+pymupdf

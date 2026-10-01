@@ -14,7 +14,7 @@ usage:
   python dcsc_rules.py rules --fc <FC>           every MTM/section holding a feature code
   python dcsc_rules.py find <MTM|model> <regex> [--tce]   search the COMPLETE option list of an MTM
   python dcsc_rules.py gates <regex> [--sev critical|warning|normal]
-  python dcsc_rules.py models [regex]
+  python dcsc_rules.py models [regex] | --retired   MTMs in the snapshot, or CTOs DCSC has retired
   python dcsc_rules.py build <launch.json> <static.json> [<kb.sqlite>]   maintainer only: regenerate the data file
 """
 import gzip, json, os, re, sqlite3, sys
@@ -133,6 +133,12 @@ def gates(db, args):
 
 
 def models(db, pat=None):
+    if pat == "--retired":
+        rt = db["meta"].get("retired", [])
+        print(f"{len(rt)} CTOs DCSC no longer opens for configuration ('Not found CTO') as of {db['meta']['crawled']}:")
+        for r in rt:
+            print(f"  {r['mtm']}  {r['name']}")
+        return
     rx = re.compile(pat, re.I) if pat else None
     for mtm, m in sorted(db["models"].items(), key=lambda x: x[1]["name"]):
         if rx and not rx.search(m["name"] + " " + mtm):
@@ -218,7 +224,18 @@ def build(launch_p, static_p, kb_p=None):
             with open(os.environ["DCSC_RULES_DROPLOG"], "w", encoding="utf-8") as f:
                 for (s, b), h in uniq_drop.items():
                     f.write(f"[{s}] {h} :: {b[:200]}\n")
+    prev = {}
+    if os.path.exists(DATA):  # keep names for CTOs that DCSC no longer opens (launch 404 on the crawl)
+        try:
+            with gzip.open(DATA, "rt", encoding="utf-8") as f:
+                p = json.load(f)
+            prev = {m: v.get("name", "") for m, v in p.get("models", {}).items()}
+            prev.update({r["mtm"]: r["name"] for r in p.get("meta", {}).get("retired", []) if isinstance(r, dict)})
+        except Exception:
+            pass
+    retired = [dict(mtm=m, name=prev.get(m, "")) for m in launch["meta"].get("retired", []) if m not in out]
     meta = {"crawled": launch["meta"].get("crawledAt", "")[:10], "source": "DCSC launch + static rules snapshot, prices removed",
+            "retired": retired,
             "note": "Default-state snapshot. q = legal quantities in the default state ([0] = not selectable in that state, not illegal). "
                     "TCE flags are per section and rotate. Confirm in live DCSC."}
     os.makedirs(os.path.dirname(DATA), exist_ok=True)

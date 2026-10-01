@@ -11,6 +11,30 @@
 
 FACTS = [
 
+("dcsc-crawl-2026-09-30-tce-changes",
+ "SR630 V4|SR650 V4|SR650a V4|HX630 V4|HX650 V4|HX650 V4 Storage|FX630 V4|SR635 V3|SR645 V3|SR655 V3|SR665 V3|SR250 V3|ST250 V3|ST50 V3", "proven",
+ "DCSC rules crawl 2026-09-30 vs 2026-07-28: Intel V4 16C TCE is now C5R5 6724P only, 940-16i adapters B8NZ/BM35 became TCE, EPYC 9535/9135 became TCE, BYLV 7.68TB SATA and C4D6 20TB SAS dropped out",
+ "Per-section Top Choice flags in the DCSC static catalogue, compared between the two crawls (880 TCE gains, 95 losses, 9,213 options added, 894 removed across 225 live MTMs). "
+ "INTEL V4: C5RD 6515P and C5QV 6517P lost TCE on SR630 V4, SR650 V4 and SR650a V4, and C5QQ 6505P 12C lost it everywhere, so the only TCE 16-core Xeon on those three is C5R5 6724P (matches the live panels of 2026-09-23). "
+ "On HX630 V4 and HX650 V4 C5RD lost TCE while C5R6 6507P 8C gained it; FX630 V4 gained C5R7, C5R6 and C5R4. "
+ "CONTROLLERS: the 940-16i PCIe adapters B8NZ (8GB) and BM35 (4GB) became TCE on SR630 V4, SR650 V4, SR650a V4 and the AMD V3 1U/2U servers. This may reopen a TCE path for 12x 3.5in on SR650 V4 (C3RW + a 16i), which the July evidence ruled out; build it and check BU1E before promising it. C3RV 8x3.5 SAS/SATA + 4x3.5 AnyBay lost TCE on SR650 V4. "
+ "AMD V3: C2AL EPYC 9535 64C 300W and C2AK EPYC 9135 16C 200W became TCE on SR635/645/655/665 V3. "
+ "DRIVES: BYLV 2.5in 7.68TB RI SATA lost TCE on most platforms and C4D6 3.5in 20TB SAS lost it on AMD V3, SR650 V4 and the entry servers; BYLZ 3.5in 1.92TB RI SATA gained it. "
+ "ENTRY: C521 6333P 6C lost TCE on SR250 V3, ST250 V3 and ST50 V3 (matches the live panels), BMFT 540-8i gained it. "
+ "GPU: CHWT RTX PRO 6000 Server Edition 96GB and CHWU GPU-Ready became TCE on SR650a V4. HX650 V4 Storage gained 231 TCE options (the whole model joined the program). "
+ "The catalogue flag is per section and is a snapshot; the live panel and a BU1E export remain the proof.",
+ "DCSC static and launch rules crawls 2026-07-28 and 2026-09-30", "2026-09-30"),
+
+("dcsc-retired-ctos-2026-09-30",
+ "HX630 V3|HX650 V3|MX630 V3|MX650 V3|VX630 V3|VX650 V3|ST650 V3|SR685a V3|D1224|Scale Computing|Cornelis", "proven",
+ "43 CTOs no longer open in DCSC as of 2026-09-30: every ThinkAgile V3 (HX630/650 V3 incl. ROBO and Storage, MX630/650 V3, VX630/650 V3), ST650 V3, SR685a V3, D1224 and the Scale Computing V3/SE100 variants",
+ "On the 2026-09-30 crawl DCSC answered 'Not found CTO with code ...' when opening a configuration for these, with every solution-mode and slice setting tried, and they are gone from the product menus; a live check in the DCSC UI confirmed HX650 V3 is gone. "
+ "ThinkAgile HX630 V3 (7D6M: IS, CN, ROBO IS/CN, SAP HANA, for AI), HX650 V3 (7D6N: IS, CN, Storage IS/CN, SAP HANA, for AI), MX650 V3 (7D6S) and MX650 V3 PR (7DKB), MX630 V3 (7D6U), VX650 V3 (7D6W), VX630 V3 (7D6X); "
+ "ST650 V3 (7D7A); SR685a V3 for AI (7DHCCTO1WW); D1224 SFF JBOD (4587HC2); Scale Computing Platform SR630 V3 (7D73CTO3WW) and SR650 V3 (7D76CTO5WW); Scale Computing SE100 (7DGRCTO2WW) and its 1U2N/1U3N enclosures (7DGV CTO3/CTO4); one Cornelis CN5000 switch variant (7DMQCTO4WW). "
+ "The plain ThinkSystem SR630 V3 and SR650 V3 CTOs are still live. So a V3 ThinkAgile refresh or add-node request now maps to V4 (HX630 V4, HX650 V4, HX650 V4 Storage), and a mixed-generation Nutanix cluster expansion must use V4 nodes. "
+ "An older Lenovo Press page that still shows these as available is stale on orderability. List them with: kb.py models --retired.",
+ "DCSC launch endpoint and product menus 2026-09-30; DCSC UI check 2026-09-30", "2026-09-30"),
+
 ("amd-v3-cpu-generation-dictates-dimm-speed",
  "SR645 V3|SR665 V3|SR635 V3|SR655 V3|AMD EPYC 9004|AMD EPYC 9005", "proven",
  "AMD V3: EPYC 9004 Genoa pairs ONLY with 4800MHz DIMMs and EPYC 9005 Turin ONLY with 6400MHz; the DIMM speed picks the CPU generation",
@@ -376,7 +400,8 @@ FACTS = [
 ("sr650-v4-tce-8-port-controller-cap-and-3-5in-bays",
  "SR650 V4|7DGDCTO1WW", "proven",
  "SR650 V4 3.5in: 12 usable bays and TCE are mutually exclusive because every 16i controller is non-TCE; the proven pairing is C46N plus B8NY (8 SAS/SATA bays)",
- "On 7DGDCTO1WW, 12 usable 3.5in bays and Top Choice Express cannot coexist. The chassis C3QL (12x 3.5in) and 12-bay backplane C3RW are both TCE parts, but EVERY 16i controller on the MTM is non-TCE: B8P0, BM35 and B8NZ (940-16i), B8P1 and BM50 (440-16i); B8P0 940-16i Internal was also not offered in live DCSC on SR650 V4 in July 2026 despite a catalog TCE flag. "
+ "UPDATE 2026-09-30: the DCSC crawl of that date flags the 940-16i adapters B8NZ and BM35 as TCE on 7DGDCTO1WW, so this ceiling may no longer hold; build C3RW + B8NZ and check BU1E before relying on either answer (see dcsc-crawl-2026-09-30-tce-changes). "
+ "As of 2026-09-10: on 7DGDCTO1WW, 12 usable 3.5in bays and Top Choice Express cannot coexist. The chassis C3QL (12x 3.5in) and 12-bay backplane C3RW are both TCE parts, but EVERY 16i controller on the MTM is non-TCE: B8P0, BM35 and B8NZ (940-16i), B8P1 and BM50 (440-16i); B8P0 940-16i Internal was also not offered in live DCSC on SR650 V4 in July 2026 despite a catalog TCE flag. "
  "The only TCE controllers are B8NY 940-8i and C0TU 545-8i, both 8-port, and one non-TCE part drops BU1E for the whole config. "
  "PROOF from exports, not inference: every config using C3RW is paired with a 16i (BM50, B8NZ) and carries TCE = no; every config using C46N (8x 3.5in SAS/SATA plus 4x 3.5in NVMe) is paired with B8NY or C0TU and most carry BU1E with zero criticals (14 configs). C46N plus B8NY is THE validated 3.5in pairing. "
  "So the TCE ceiling is 8 SAS/SATA drives (84TB usable at RAID 5 with 12TB drives). C0TU 545-8i cannot do RAID 5 or 6, so any parity build needs B8NY plus AUNP SuperCap, C21H supercap cable and C1XV SAS cable. Check the controller port ceiling BEFORE picking a backplane on any TCE build. "

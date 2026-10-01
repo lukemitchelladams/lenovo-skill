@@ -56,4 +56,13 @@ If `LENOVO_KB_DB` is set, it points at the user's personal KB of their own DCSC 
 
 ## Output
 
+**Every build answer ends with a DCSC copy/paste block, one per config:**
+- lines `Model:`, `Chassis:`, `Backplane:`, `CPU:`, `Heatsink:`, `Memory:`, `Storage:`, `Network:`, `Power Supply:`, `Power Cord:`, `Fan:`, `Security:`, `Rail:`, `OS & Software:`
+- each line is `N x <exact DCSC description>`, per node
+- a `Nodes: N` footer
+- no feature codes inside the block
+- below a `------` divider, the feature codes, TCE status and watch-outs
+
+Get exact descriptions with `kb.py dfind`.
+
 Lead with the answer. Put the evidence in a table with sources and dates. Mark every claim proven, flagged or unknown. End with the exact question to put to Lenovo if anything is unresolved. Say "Top Choice Express (TCE)", never "quick-ship". Never give prices from memory.

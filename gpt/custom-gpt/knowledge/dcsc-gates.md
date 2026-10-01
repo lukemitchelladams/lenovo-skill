@@ -1,6 +1,6 @@
 # DCSC gating messages
 
-111 distinct messages DCSC emitted in real configurations (configuration names stripped; DCSC rules snapshot 2026-07-28). Critical blocks a build; Warning and Normal do not. They are the configurator's own rules, verbatim.
+111 distinct messages DCSC emitted in real configurations (configuration names stripped; DCSC rules snapshot 2026-09-30). Critical blocks a build; Warning and Normal do not. They are the configurator's own rules, verbatim.
 
 ## Critical (9)
 

@@ -9,7 +9,7 @@
 | `rules <model\|MTM> [--required] [--section <regex>] [--tce]` | DCSC sections for a platform: required and single-entry sections, legal quantities |
 | `dfind <model\|MTM> <regex> [--tce]` | Search the **complete** DCSC option list of an MTM |
 | `gates <regex> [--sev critical]` | DCSC gating messages, the configurator's own rules verbatim (config names stripped) |
-| `models [regex]` | The 265 MTMs in the DCSC rules snapshot |
+| `models [regex]` / `models --retired` | The 225 live MTMs in the DCSC rules snapshot, or the 43 CTOs DCSC no longer opens |
 | `spec <model\|MTM>` / `spec --list` | Platform limits from Lenovo Press: sockets, DIMM slots and channels, bays, PCIe/OCP, PSU, GPU |
 | `check <bom> [--mtm X] [--nodes N] [--tce] [--raid N] [--workload nutanix]` | 40 deterministic validators on a Lenovo BOM or DCSC export; exits 1 on a block |
 | `match <competitor bom> [--platform "SR650 V4" \| --mtm X] [--nodes N] [--json]` | Competitor BOM (txt, csv, xlsx) to a Lenovo worksheet: platform, up to 3 real feature codes per line with TCE flags, companions, validator run |

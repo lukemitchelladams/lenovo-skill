@@ -67,6 +67,15 @@ Full references are in `references/`: `hard-rules.md`, `facts.md`, `platform-spe
 
 ## Output
 
+**Every build or config answer ends with a DCSC copy/paste block, one per config:**
+- lines `Model:`, `Chassis:`, `Backplane:`, `CPU:`, `Heatsink:`, `Memory:`, `Storage:` (comma-joined), `Network:` (comma-joined), `Power Supply:`, `Power Cord:`, `Fan:`, `Security:`, `Rail:`, `OS & Software:`
+- each line is `N x <exact DCSC description>`, per node
+- a `Nodes: N` footer
+- no feature codes or notes inside the block
+- below a `------` divider, the feature codes to audit, their TCE status and the watch-outs
+
+Get exact descriptions with `kb.py dfind`. In Claude Code, write each block to a `.txt` file.
+
 Lead with the answer. Put the evidence in a table with its sources and dates. Mark every claim **proven**, **flagged** or **unknown**. End with the exact question to put to Lenovo or the DCSC panel if anything is unresolved.
 
 Say "Top Choice Express (TCE)", never "quick-ship". Give no prices from memory or from the snapshot, which has none; prices come only from a current export.

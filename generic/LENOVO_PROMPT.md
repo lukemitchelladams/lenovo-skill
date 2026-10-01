@@ -38,6 +38,12 @@ If you could not find or read a source, say so. Never imply you checked somethin
 
 Only a BU1E export proves the result is TCE.
 
+**DCSC paste:** every build answer ends with a copy/paste block per config:
+- lines `Model:`, `Chassis:`, `Backplane:`, `CPU:`, `Heatsink:`, `Memory:`, `Storage:`, `Network:`, `Power Supply:`, `Power Cord:`, `Fan:`, `Security:`, `Rail:`, `OS & Software:`
+- each line is `N x <exact DCSC description>` per node
+- a `Nodes: N` footer
+- no feature codes inside the block; list them below a `------` divider
+
 **Output:** lead with the answer. Put the evidence in a table with sources. Mark each claim proven, flagged or unknown. End with the exact question to put to Lenovo if anything is unresolved. Say "Top Choice Express (TCE)", never "quick-ship". Never give prices from memory.
 
 ---

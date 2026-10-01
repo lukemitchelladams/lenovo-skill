@@ -611,11 +611,13 @@ def _(c):
         return [("D4390 paired with the v1 0U 60A delta PDU - DCSC's compatibility matrix gates this pairing. Use the current PDU revision.", p)]
 
 # ---- 4-port OCP -------------------------------------------------------------------------
-@rule("ocp-x16-upgrade", "warn", lambda c: bool(re.search(r"\bV4\b", c["family"] + " " + c["mtm"], I)) and bool(sel(c, r"OCP.*4[- ]?Port|4[- ]?Port.*OCP")))
+_OCP4_FAST = r"(OCP.*4[- ]?Port|4[- ]?Port.*OCP)(?=.*(25|SFP28|100|QSFP))|(25|SFP28|100|QSFP).*(OCP.*4[- ]?Port|4[- ]?Port.*OCP)"
+
+@rule("ocp-x16-upgrade", "warn", lambda c: bool(re.search(r"\bV4\b", c["family"] + " " + c["mtm"], I)) and bool(sel(c, _OCP4_FAST)))
 def _(c):
-    """V4: a 4-port OCP adapter needs the x16 OCP cable kit (base OCP slots are x8)."""
+    """V4: a 4-port 25GbE OCP adapter needs the x16 OCP cable kit (base OCP slots are x8); 1GbE 4-port cards do not."""
     if not sel(c, r"OCP Cable Kit|x16 OCP|OCP.*BANDWIDTH|Bandwidth.*Upgrade"):
-        return [("A 4-port OCP adapter is quoted on a V4 platform with no x16 OCP cable kit. Both OCP slots are x8 by default and a 4-port 25GbE OCP wants x16, so DCSC will normally pull the kit in (C1YK on SR650 V4/SR630 V4). Either accept it, or drop to a 2-port OCP adapter (e.g. BN2T) which fits the base x8 slot with no kit.", sel(c, r"OCP.*4[- ]?Port|4[- ]?Port.*OCP"))]
+        return [("A 4-port 25GbE OCP adapter is quoted on a V4 platform with no x16 OCP cable kit. Both OCP slots are x8 by default and a 4-port 25GbE OCP wants x16, so DCSC will normally pull the kit in (C1YK on SR650 V4/SR630 V4). Either accept it, or drop to a 2-port OCP adapter (e.g. BN2T) which fits the base x8 slot with no kit.", sel(c, _OCP4_FAST))]
 
 # ---- hygiene ----------------------------------------------------------------------------
 @rule("config-completeness", "block", lambda c: len(c["lines"]) > 3)

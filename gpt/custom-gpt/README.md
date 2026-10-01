@@ -12,7 +12,7 @@ You need a ChatGPT plan that can create GPTs.
    - `platform-specs.md`: platform limits
    - `dcsc-gates.md`: DCSC gating messages
    - `lenovo-press-docs.md`: the platform-to-guide index
-   - `lenovo-kb-tools.zip`: the Python tools plus the DCSC rules snapshot (265 MTMs, no prices)
+   - `lenovo-kb-tools.zip`: the Python tools plus the DCSC rules snapshot (225 live MTMs, crawled 2026-09-30, no prices)
 
    The zip comes from the [latest release](https://github.com/lukemitchelladams/lenovo-skill/releases/latest), or from `python tools/build_references.py`.
 6. **Capabilities:** turn on **Web Search** (for Lenovo Press and the competitor map) and **Code Interpreter & Data Analysis**. Code Interpreter runs the tools, including matching competitor BOMs and validating BOMs and DCSC `.xlsx` exports. Image generation is not needed.

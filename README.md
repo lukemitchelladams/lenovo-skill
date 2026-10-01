@@ -4,14 +4,14 @@ An evidence-first Lenovo data center assistant for **Claude**, **ChatGPT**, **Op
 
 Models are confidently wrong about Lenovo feature codes, and the catalogue rotates every few weeks. This skill gives the model real evidence:
 
-- **The DCSC configurator rules for 265 MTMs:**
+- **The DCSC configurator rules for 225 live MTMs** (crawled 2026-09-30), plus the 43 CTOs DCSC has retired:
   - every option per section, with its Top Choice Express (TCE) flag, min/max and legal quantities
   - required sections
-  - 10,500+ withdraw dates
+  - 13,000+ withdraw dates
   - 111 of DCSC's own gating messages
 
   Prices are stripped and customer data is excluded.
-- **163 verified facts:**
+- **165 verified facts:**
   - TCE floors and ceilings
   - NIC media traps
   - M.2 RAID behaviour
@@ -111,7 +111,7 @@ Point the skill at it with `LENOVO_KB_DB=/path/to/kb/dcsc_kb.sqlite`.
 
 | Data | Source | Notes |
 |---|---|---|
-| `kb/data/dcsc-rules.json.gz` | DCSC configurator rules, crawled 2026-07-28 | Sections, options, TCE flags, min/max, legal quantities and withdraw dates, plus gating messages. Prices were removed. Gating messages had configuration names stripped, and any message that could still identify a customer was dropped. It is a default-state snapshot. |
+| `kb/data/dcsc-rules.json.gz` | DCSC configurator rules, crawled 2026-09-30 (previous: 2026-07-28) | Sections, options, TCE flags, min/max, legal quantities and withdraw dates, plus gating messages. Prices were removed. Gating messages had configuration names stripped, and any message that could still identify a customer was dropped. It is a default-state snapshot. |
 | `kb/data/platform-specs.json` | Lenovo Press product guides | Paraphrased hardware limits, with the guide id and as-of month per platform |
 | `kb/kb_facts*.py` | Hand-verified against DCSC exports and Lenovo Press | Each fact is dated and marked proven, flagged or unknown. No customer names or prices. |
 | Competitor map | `lenovopress.lenovo.com/compare_competitor_map.json` | Fetched live, not redistributed |

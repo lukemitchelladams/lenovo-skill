@@ -54,6 +54,18 @@ class Load(unittest.TestCase):
         self.assertEqual([r["qty"] for r in rows], [2, 16])
 
 
+class OcpRule(unittest.TestCase):
+    def test_1gbe_4port_ocp_needs_no_x16_kit(self):
+        import rules
+        bom = [dict(fc="B5T1", descr="ThinkSystem Broadcom 5719 1GbE RJ45 4-port OCP Ethernet Adapter", qty=1)]
+        self.assertNotIn("ocp-x16-upgrade", {f["rule"] for f in rules.validate(bom, mtm="7DG9CTO1WW")})
+
+    def test_25gbe_4port_ocp_warns(self):
+        import rules
+        bom = [dict(fc="BPPW", descr="ThinkSystem Broadcom 57504 10/25GbE SFP28 4-Port OCP Ethernet Adapter", qty=1)]
+        self.assertIn("ocp-x16-upgrade", {f["rule"] for f in rules.validate(bom, mtm="7DG9CTO1WW")})
+
+
 class Run(unittest.TestCase):
     def test_order_totals_are_divided_by_server_count(self):
         p = tmp("Product #,Description,Qty\nX,HPE ProLiant DL360 Gen12 8SFF Server,10\nY,INT Xeon-G 6724P CPU,10\n"

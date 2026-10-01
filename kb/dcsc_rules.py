@@ -7,14 +7,17 @@ It is a snapshot of each MTM's DEFAULT configuration state on the crawl date:
   - legal quantities change as other selections change, so q=[0] means 'not selectable in the
     default state', NOT 'illegal'
   - TCE flags are PER SECTION and rotate; only BU1E in a live export proves TCE
+  - from the 2026-10-01 crawl each feature also carries DCSC's tceAudience BITMASK (window.EXPRESS_SOURCE_MAP):
+    1 = Top Choice Express (proof FC BU1E), 2 = AI Express small/medium AIESM (CU1B), 4 = AI Express large
+    AIELG (CU1A); output shows tce=Y, Y/AIX or Y/AIX-L
 Always confirm in the live DCSC configurator.
 
 usage:
   python dcsc_rules.py rules <MTM|model> [--required] [--section <regex>] [--tce]
   python dcsc_rules.py rules --fc <FC>           every MTM/section holding a feature code
-  python dcsc_rules.py find <MTM|model> <regex> [--tce]   search the COMPLETE option list of an MTM
+  python dcsc_rules.py find <MTM|model> <regex> [--tce|--aix]   search the COMPLETE option list of an MTM
   python dcsc_rules.py gates <regex> [--sev critical|warning|normal]
-  python dcsc_rules.py models [regex] | --retired   MTMs in the snapshot, or CTOs DCSC has retired
+  python dcsc_rules.py models [regex] | --retired | --express   MTMs, retired CTOs, or the TCE / AI Express product lists
   python dcsc_rules.py build <launch.json> <static.json> [<kb.sqlite>]   maintainer only: regenerate the data file
 """
 import gzip, json, os, re, sqlite3, sys
@@ -53,6 +56,29 @@ def resolve(db, q):
     return hits
 
 
+AIE_BITS = 6  # tceAudience bits 2 (AI Express SM, CU1B) and 4 (AI Express LG, CU1A)
+
+
+def is_aie(ta):
+    return bool(ta) and bool(ta & AIE_BITS)
+
+
+def tce_tag(tc, ta=None):
+    """Y = topChoice in that section; /AIX = AI Express SM (bit 2, CU1B); /AIX-L = AI Express LG (bit 4, CU1A)."""
+    ta = ta or 0
+    return ("Y" if tc else "-") + ("/AIX" if ta & 2 else "") + ("/AIX-L" if ta & 4 else "")
+
+
+def _opt(o):
+    """options() row -> (tab, sub, sec, fc, descr, min, max, tce, withdrawn, type, tceAudience); older snapshots lack the last."""
+    return tuple(o[:10]) + ((o[10] if len(o) > 10 else None),)
+
+
+def _feat(f):
+    """default-state feature -> (fc, descr, min, max, q, tce, withdrawn, tceAudience)."""
+    return tuple(f[:7]) + ((f[7] if len(f) > 7 else None),)
+
+
 def fmt_q(q):
     if not q:
         return "-"
@@ -65,11 +91,12 @@ def rules(db, args):
         n = 0
         for mtm, m in sorted(db["models"].items()):
             legal = {(s["n"], f[0]): f[4] for s in m["secs"] for f in s["f"]}
-            for tab, sub, sec, c, d, mn, mx, tc, wd, ty in options(db, mtm):
+            for o in options(db, mtm):
+                tab, sub, sec, c, d, mn, mx, tc, wd, ty, ta = _opt(o)
                 if c == fc:
                     n += 1
                     q = legal.get((sec, c))
-                    print(f"{mtm}  {m['name'][:34]:<34} {tab}/{sec[:28]:<28} tce={'Y' if tc else '-'} min={mn} max={mx}"
+                    print(f"{mtm}  {m['name'][:34]:<34} {tab}/{sec[:28]:<28} tce={tce_tag(tc, ta)} min={mn} max={mx}"
                           f"{' q=' + fmt_q(q) if q is not None else ''}{'  withdrawn ' + wd if wd else ''}")
         print(f"{fc}: {n} section entries" if n else f"{fc}: not in the rules snapshot")
         return
@@ -93,8 +120,9 @@ def rules(db, args):
         flags = (" REQUIRED" if s["req"] else "") + (" single-entry" if s["single"] else "")
         print(f"--- {s['tab']} / {s['sub']} / {s['n']}{flags}")
         if rx or not req:
-            for c, d, mn, mx, q, tc, wd in feats:
-                print(f"    {c:<6} tce={'Y' if tc else '-'} min={mn} max={mx} q={fmt_q(q):<14} {d[:70]}{'  [withdrawn ' + wd + ']' if wd else ''}")
+            for f in feats:
+                c, d, mn, mx, q, tc, wd, ta = _feat(f)
+                print(f"    {c:<6} tce={tce_tag(tc, ta)} min={mn} max={mx} q={fmt_q(q):<14} {d[:70]}{'  [withdrawn ' + wd + ']' if wd else ''}")
 
 
 def options(db, mtm):
@@ -102,17 +130,23 @@ def options(db, mtm):
     m = db["models"][mtm]
     if m.get("opts"):
         return m["opts"]
-    return [[s["tab"], s["sub"], s["n"], c, d, mn, mx, tc, wd, ""] for s in m["secs"] for c, d, mn, mx, q, tc, wd in s["f"]]
+    rows = []
+    for s in m["secs"]:
+        for f in s["f"]:
+            c, d, mn, mx, q, tc, wd, ta = _feat(f)
+            rows.append([s["tab"], s["sub"], s["n"], c, d, mn, mx, tc, wd, "", ta])
+    return rows
 
 
-def find(db, mtm_q, pat, tce_only=False):
+def find(db, mtm_q, pat, tce_only=False, aix_only=False):
     rx = re.compile(pat, re.I)
     for mtm in resolve(db, mtm_q)[:6]:
         n = 0
-        for tab, sub, sec, c, d, mn, mx, tc, wd, ty in options(db, mtm):
-            if (rx.search(d) or rx.search(c)) and (tc or not tce_only):
+        for o in options(db, mtm):
+            tab, sub, sec, c, d, mn, mx, tc, wd, ty, ta = _opt(o)
+            if (rx.search(d) or rx.search(c)) and (tc or not tce_only) and (is_aie(ta) or not aix_only):
                 n += 1
-                print(f"{mtm} {sec[:28]:<28} {c:<6} tce={'Y' if tc else '-'} max={mx if mx is not None else '-':<3} {d[:74]}{'  [withdrawn ' + wd + ']' if wd else ''}")
+                print(f"{mtm} {sec[:28]:<28} {c:<6} tce={tce_tag(tc, ta)} max={mx if mx is not None else '-':<3} {d[:74]}{'  [withdrawn ' + wd + ']' if wd else ''}")
         print(f"-- {n} options matched on {mtm} (complete option list, snapshot {db['meta']['crawled']})")
 
 
@@ -139,6 +173,16 @@ def models(db, pat=None):
         for r in rt:
             print(f"  {r['mtm']}  {r['name']}")
         return
+    if pat == "--express":
+        lists = db["meta"].get("lists") or {}
+        if not lists:
+            print("this snapshot has no product lists (added with the 2026-10-01 crawl)"); return
+        for k, lab in (("tce", "Top Choice Express"), ("aiExpress", "AI Express")):
+            xs = lists.get(k) or []
+            print(f"{lab} ({len(xs)} products, DCSC home page lists, {db['meta']['crawled']}):")
+            for x in xs:
+                print(f"  {x.get('name', '')}  [{x.get('sub') or ''}]")
+        return
     rx = re.compile(pat, re.I) if pat else None
     for mtm, m in sorted(db["models"].items(), key=lambda x: x[1]["name"]):
         if rx and not rx.search(m["name"] + " " + mtm):
@@ -164,14 +208,14 @@ def build(launch_p, static_p, kb_p=None):
                 seen.add(k)
                 # complete option list: [tab, sub, section, fc, descr, min, max, tce, withdrawn, type]
                 opts.setdefault(mtm, []).append([cat, f.get("t", ""), f.get("s", ""), f["c"], f.get("d", ""), f.get("mn"),
-                                                 f.get("mx"), f.get("tc", 0), w, f.get("ty", "")])
+                                                 f.get("mx"), f.get("tc", 0), w, f.get("ty", ""), f.get("ta")])
     out = {}
     for mtm, m in launch["data"].items():
         secs = []
         for s in m["secs"]:
             secs.append({"tab": s["tab"], "sub": s["sub"], "n": s["n"], "req": s["req"], "single": s["single"],
                          "f": [[f["c"], f.get("d", ""), f.get("mn"), f.get("mx"), f.get("q") or [], f.get("tc", 0),
-                                wd.get((mtm, f["c"]), "")] for f in s["f"]]})
+                                wd.get((mtm, f["c"]), ""), f.get("ta")] for f in s["f"]]})
         out[mtm] = {"name": names.get(mtm) or m.get("desc") or "", "secs": secs, "opts": opts.get(mtm, [])}
     gl = []
     if kb_p:
@@ -235,7 +279,7 @@ def build(launch_p, static_p, kb_p=None):
             pass
     retired = [dict(mtm=m, name=prev.get(m, "")) for m in launch["meta"].get("retired", []) if m not in out]
     meta = {"crawled": launch["meta"].get("crawledAt", "")[:10], "source": "DCSC launch + static rules snapshot, prices removed",
-            "retired": retired,
+            "retired": retired, "lists": launch["meta"].get("lists") or {},
             "note": "Default-state snapshot. q = legal quantities in the default state ([0] = not selectable in that state, not illegal). "
                     "TCE flags are per section and rotate. Confirm in live DCSC."}
     os.makedirs(os.path.dirname(DATA), exist_ok=True)
@@ -254,9 +298,9 @@ def main(argv):
     db = load()
     if c == "rules": rules(db, a)
     elif c == "find" and len(a) >= 2:
-        t = "--tce" in a
-        a = [x for x in a if x != "--tce"]
-        find(db, a[0], " ".join(a[1:]), t)
+        t, x = "--tce" in a, "--aix" in a
+        a = [y for y in a if y not in ("--tce", "--aix")]
+        find(db, a[0], " ".join(a[1:]), t, x)
     elif c == "gates": gates(db, a)
     elif c == "models": models(db, a[0] if a else None)
     else: print(__doc__)

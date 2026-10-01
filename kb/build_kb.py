@@ -10,9 +10,14 @@ Ground truth, not inference:
 
 Incremental: existing configs are never deleted (their source files may be gone,
 and _zipcache paths are renumbered every scan). A file is added only when its
-content signature (export name + part lines) is not already in the db. The db is
-never removed either, so the fact/doc_fts tables from build_kb_index.py survive
+content signature (export name + priced part lines) is not already in the db. The db
+is never removed either, so the fact/doc_fts tables from build_kb_index.py survive
 and a reader holding the file open (e.g. an MCP Sql tool) can't block the run.
+
+Lines whose price cell is blank (CTO-rollup components) or text ("No charge") are
+kept at unit 0.0 with priced=0 and left out of the signature, so configs stored by
+the old strict parser (priced lines only) still match a re-scan of the same file;
+when one does, its part rows and tce flag are refilled in place under the same id.
 """
 import os, re, sys, sqlite3, datetime, warnings, hashlib
 import openpyxl
@@ -36,7 +41,8 @@ CREATE TABLE IF NOT EXISTS config(
   id INTEGER PRIMARY KEY, file TEXT, name TEXT, mtime TEXT,
   mtm TEXT, model TEXT, nodes REAL, tce INTEGER, criticals INTEGER, total REAL);
 CREATE TABLE IF NOT EXISTS part(
-  cfg INTEGER, fc TEXT, descr TEXT, qty REAL, unit REAL, cat TEXT);
+  cfg INTEGER, fc TEXT, descr TEXT, qty REAL, unit REAL, cat TEXT,
+  priced INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS msg(
   cfg INTEGER, severity TEXT, text TEXT);
 CREATE INDEX IF NOT EXISTS ix_part_fc ON part(fc);
@@ -45,6 +51,9 @@ CREATE INDEX IF NOT EXISTS ix_part_cfg ON part(cfg);
 if "sig" not in [r[1] for r in cx.execute("PRAGMA table_info(config)")]:
     cx.execute("ALTER TABLE config ADD COLUMN sig TEXT")
 cx.execute("CREATE INDEX IF NOT EXISTS ix_config_sig ON config(sig)")
+# rows stored before lenient parsing all had a numeric price, hence the default of 1
+if "priced" not in [r[1] for r in cx.execute("PRAGMA table_info(part)")]:
+    cx.execute("ALTER TABLE part ADD COLUMN priced INTEGER NOT NULL DEFAULT 1")
 
 MTM_RE = re.compile(r"^7[A-Z0-9]{3}CTO[0-9A-Z]WW$")
 ZIP_PREFIX = re.compile(r"^\d{4}_")
@@ -64,7 +73,7 @@ def signature(path, parts):
 
 # backfill signatures on rows built before incremental mode
 for cid, f in cx.execute("SELECT id, file FROM config WHERE sig IS NULL").fetchall():
-    rows = cx.execute("SELECT fc, qty, unit FROM part WHERE cfg=? ORDER BY rowid", (cid,)).fetchall()
+    rows = cx.execute("SELECT fc, qty, unit FROM part WHERE cfg=? AND priced=1 ORDER BY rowid", (cid,)).fetchall()
     cx.execute("UPDATE config SET sig=? WHERE id=?", (signature(f, rows), cid))
 known = {s for (s,) in cx.execute("SELECT sig FROM config")}
 before = cx.execute("SELECT COUNT(*) FROM config").fetchone()[0]
@@ -73,7 +82,7 @@ def sheet_rows(ws):
     for row in ws.iter_rows(values_only=True):
         yield ["" if v is None else str(v).strip() for v in row]
 
-ok = err = dup = 0
+ok = err = dup = refilled = gained = flipped = 0
 bad = []
 for i, path in enumerate(FILES, 1):
     try:
@@ -88,17 +97,21 @@ for i, path in enumerate(FILES, 1):
 
     parts, mtms, model, nodes, total, tce = [], [], "", None, 0.0, 0
     for c in sheet_rows(ws):
-        if len(c) < 6:
+        if len(c) < 5:
             continue
         fc, descr = c[0], c[2]
         try:
-            qty = float(c[4]); unit = float(c[5])
+            qty = float(c[4])
         except Exception:
             continue
         if not descr:
             continue
+        try:
+            unit, priced = float(c[5]), 1
+        except Exception:
+            unit, priced = 0.0, 0
         total += qty * unit
-        parts.append((fc, descr, qty, unit))
+        parts.append((fc, descr, qty, unit, priced))
         if fc == "BU1E":
             tce = 1
         if MTM_RE.match(fc):
@@ -108,10 +121,24 @@ for i, path in enumerate(FILES, 1):
                 model = m.group(1).strip() if m else descr[:40]
                 nodes = qty
     mtm = max(set(mtms), key=mtms.count) if mtms else ""
-    sig = signature(path, [(a, c_, d) for a, b, c_, d in parts])
+    sig = signature(path, [(a, c_, d) for a, b, c_, d, p in parts if p])
     if sig in known:
         wb.close()
         dup += 1
+        if any(not p for *_, p in parts):
+            # stored by the strict parser (no priced=0 rows yet): refill it in place
+            for cid, old_n, old_tce in cx.execute(
+                    """SELECT id, (SELECT COUNT(*) FROM part WHERE cfg=config.id), tce FROM config
+                       WHERE sig=? AND NOT EXISTS(SELECT 1 FROM part WHERE cfg=config.id AND priced=0)""",
+                    (sig,)).fetchall():
+                cx.execute("DELETE FROM part WHERE cfg=?", (cid,))
+                cx.executemany("INSERT INTO part(cfg,fc,descr,qty,unit,priced) VALUES(?,?,?,?,?,?)",
+                               [(cid, *r) for r in parts])
+                new_tce = max(tce, old_tce)
+                cx.execute("UPDATE config SET tce=? WHERE id=?", (new_tce, cid))
+                refilled += 1
+                gained += len(parts) - old_n
+                flipped += new_tce != old_tce
         continue
     known.add(sig)
 
@@ -135,8 +162,8 @@ for i, path in enumerate(FILES, 1):
         "INSERT INTO config(file,name,mtime,mtm,model,nodes,tce,criticals,total,sig) VALUES(?,?,?,?,?,?,?,?,?,?)",
         (path, os.path.basename(path), ts, mtm, model, nodes, tce, crit, total, sig))
     cid = cur.lastrowid
-    cx.executemany("INSERT INTO part(cfg,fc,descr,qty,unit) VALUES(?,?,?,?,?)",
-                   [(cid, a, b, c_, d) for a, b, c_, d in parts])
+    cx.executemany("INSERT INTO part(cfg,fc,descr,qty,unit,priced) VALUES(?,?,?,?,?,?)",
+                   [(cid, *r) for r in parts])
     cx.executemany("INSERT INTO msg(cfg,severity,text) VALUES(?,?,?)",
                    [(cid, s, t) for s, t in msgs])
     ok += 1
@@ -147,6 +174,7 @@ for i, path in enumerate(FILES, 1):
 cx.commit()
 
 print(f"\nadded {ok} new configs ({dup} already in db, {err} unreadable)")
+print(f"refilled {refilled} strict-parsed configs in place (+{gained:,} unpriced rows, {flipped} tce 0->1)")
 for b in bad:
     print(f"  unreadable: {b}")
 print(f"configs      : {before} -> {cx.execute('SELECT COUNT(*) FROM config').fetchone()[0]}")
@@ -162,4 +190,4 @@ for mtm, model, n, t in q("""SELECT mtm, MIN(model), COUNT(*), SUM(tce)
                              FROM config WHERE mtm<>'' GROUP BY mtm ORDER BY COUNT(*) DESC"""):
     print(f"  {mtm}  {str(model)[:26]:<28} configs={n:<4} TCE-validated={t}")
 print(f"\ndb: {DB}")
-print(f"added {ok} new configs ({dup} already in db, {err} unreadable); total {cx.execute('SELECT COUNT(*) FROM config').fetchone()[0]}")
+print(f"added {ok} new configs ({dup} already in db, {err} unreadable); refilled {refilled}; total {cx.execute('SELECT COUNT(*) FROM config').fetchone()[0]}")

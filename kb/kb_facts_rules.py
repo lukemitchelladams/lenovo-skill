@@ -11,6 +11,25 @@
 
 FACTS = [
 
+("dcsc-ai-express-2026-10-01",
+ "SR650a V4|SR675 V3|SR680a V4|HX645 V3|HX665 V3|VX635 V3|VX645 V3|VX655 V3|VX665 V3|VX650 V4|DM240S|DM120S|DE240S|DE120S|DS3200|ALL", "proven",
+ "AI Express launched in DCSC 2026-10-01 on exactly three nodes: SR650a V4 (7DGDCTO2WW) and SR675 V3 for AI (7D9RCTO1WW) as AI Express SM (proof FC CU1B, ships 2-3 weeks), SR680a V4 B300 (7DMKCTO1WW) as AI Express LG (proof FC CU1A, ships 3-4 weeks); the AMD ThinkAgile V3 nodes joined TCE the same day",
+ "DCSC tags every feature with tceAudience, a BITMASK defined in the page's window.EXPRESS_SOURCE_MAP: "
+ "1 = TCE 'Lenovo Top Choice Express', derive FC BU1E, 'Ships in 1 - 2 weeks' (10 days, ESD 14); "
+ "2 = AIESM 'Lenovo AI Express', derive FC CU1B, 'Ships in 2 - 3 weeks' (15-20 days, ESD 20); "
+ "4 = AIELG 'Lenovo AI Express', derive FC CU1A, 'Ships in 3 - 4 weeks' (25 days). "
+ "So the AI Express PROOF is CU1B or CU1A in the export, the way BU1E proves TCE; a build that keeps one non-AIE part loses it (the DCSC code tracks selectedButNonTceFeatureCodes). "
+ "AI Express parts also carry topChoice=true; kb.py shows them as tce=Y/AIX (SM) or Y/AIX-L (LG) and `dfind <MTM> <regex> --aix` lists them. "
+ "The DCSC home page lists AI Express = SR650a V4 + SR675 V3 (isAiExpress flag; the SR680a V4 sits outside that card list) and Top Choice Express = SR645/635/665/655 V3, SR630/650 V4, SR250 V3, ST45/50/250 V3, DE4200H/DE4800, DE120S/240S, DM3010H/DM3200F, DM120S/240S/600S, DS3200, DB610S/DB720S. "
+ "SR650a V4 AI EXPRESS LIST (7DGDCTO2WW): C3QN 2.5in/EDSFF chassis, C46P 8x2.5in NVMe backplane, CPU C5QT Xeon 6530P 32C only, memory C0U9 or BYTJ 32GB or C0TQ 64GB, up to 8x C0ZU 3.84TB U.2 VA RI NVMe, "
+ "M.2 CCCZ B550p-2HS + C287 960GB, up to 2x CBK8 RTX PRO 6000 Blackwell Server Edition on CATS + C9R5 600W cable risers, rear risers C3R8 + C62D, BK1H 57414 25GbE, BQBN ConnectX-7 200GbE, B5T1 1GbE OCP, "
+ "2x C0UD 3200W Titanium, 6x CC8X fans. The model moved from standard TCE to AI Express: 147 of its 9-30 TCE options (most Xeon SKUs and drives) are no longer TCE. "
+ "SR675 V3 AI EXPRESS LIST (7D9RCTO1WW): BR7F 8DW PCIe GPU base, CPU C2AL EPYC 9535 64C, memory CA1L 64GB or CA1Q 96GB, up to 8x CBK8 on BR7S switched GPU-direct risers (+ C2RK rear, BR7H front), "
+ "C9AP ConnectX-8 2x400GbE, BW97 1GbE OCP, 4x BKTJ 2600W Titanium, M.2 CC7G B550i-2i + C287, E3.S 1T VA RI NVMe C1W8 1.92TB / C1W9 3.84TB / C1WB 15.36TB. "
+ "SAME DAY: the AMD ThinkAgile V3 HCI nodes went from 0 to 150-211 TCE options each (EPYC 9115/9135/9335/9535/9015, 32GB 6400 RDIMM-A v2, U.2 3.2TB MU, 440 HBAs, Nutanix Enterprise AI licences on HX), "
+ "VX650 V4 SAP HANA gained 152, and the DM/DE/DS expansion shelves gained 15-31. The Intel ThinkAgile V3 CTOs remain retired. Proof is still BU1E in an export.",
+ "DCSC rules crawl 2026-10-01 (launch + static, tceAudience field), DCSC home page product lists, DCSC web app window.EXPRESS_SOURCE_MAP", "2026-10-01"),
+
 ("dcsc-crawl-2026-09-30-tce-changes",
  "SR630 V4|SR650 V4|SR650a V4|HX630 V4|HX650 V4|HX650 V4 Storage|FX630 V4|SR635 V3|SR645 V3|SR655 V3|SR665 V3|SR250 V3|ST250 V3|ST50 V3", "proven",
  "DCSC rules crawl 2026-09-30 vs 2026-07-28: Intel V4 16C TCE is now C5R5 6724P only, 940-16i adapters B8NZ/BM35 became TCE, EPYC 9535/9135 became TCE, BYLV 7.68TB SATA and C4D6 20TB SAS dropped out",
@@ -27,7 +46,7 @@ FACTS = [
 
 ("dcsc-retired-ctos-2026-09-30",
  "HX630 V3|HX650 V3|MX630 V3|MX650 V3|VX630 V3|VX650 V3|ST650 V3|SR685a V3|D1224|Scale Computing|Cornelis", "proven",
- "43 CTOs no longer open in DCSC as of 2026-09-30: every ThinkAgile V3 (HX630/650 V3 incl. ROBO and Storage, MX630/650 V3, VX630/650 V3), ST650 V3, SR685a V3, D1224 and the Scale Computing V3/SE100 variants",
+ "43 CTOs no longer open in DCSC as of 2026-09-30 (unchanged 2026-10-01): every INTEL ThinkAgile V3 (HX630/650 V3 incl. ROBO and Storage, MX630/650 V3, VX630/650 V3), ST650 V3, SR685a V3, D1224 and the Scale Computing V3/SE100 variants. The AMD ThinkAgile V3 nodes (HX645/665 V3, VX635/645/655/665 V3) are live and joined TCE 2026-10-01",
  "On the 2026-09-30 crawl DCSC answered 'Not found CTO with code ...' when opening a configuration for these, with every solution-mode and slice setting tried, and they are gone from the product menus; a live check in the DCSC UI confirmed HX650 V3 is gone. "
  "ThinkAgile HX630 V3 (7D6M: IS, CN, ROBO IS/CN, SAP HANA, for AI), HX650 V3 (7D6N: IS, CN, Storage IS/CN, SAP HANA, for AI), MX650 V3 (7D6S) and MX650 V3 PR (7DKB), MX630 V3 (7D6U), VX650 V3 (7D6W), VX630 V3 (7D6X); "
  "ST650 V3 (7D7A); SR685a V3 for AI (7DHCCTO1WW); D1224 SFF JBOD (4587HC2); Scale Computing Platform SR630 V3 (7D73CTO3WW) and SR650 V3 (7D76CTO5WW); Scale Computing SE100 (7DGRCTO2WW) and its 1U2N/1U3N enclosures (7DGV CTO3/CTO4); one Cornelis CN5000 switch variant (7DMQCTO4WW). "
@@ -671,6 +690,26 @@ FACTS = [
  "Additional cores beyond 16 are licensed in 2-core packs (SDCN Standard Additional License 2-core). CAL parts on ST250 V3, all TCE-proven: SDDC 1-User, SDDX 10-User, SDDZ 50-User, SDER RDS CAL. "
  "Moving to Windows Server Essentials (10-core cap) does cut the OS cost, cutting cores never does; see topic windows-server-essentials-vs-standard-plus-cals-under-25-users and existing fact windows-factory-install-needs-boot-array.",
  "DCSC exports and part descriptions 2026-08-20; Microsoft Windows Server licensing terms", "2026-08-20"),
+
+("sr645-v3-bp8m-e810-da4-left-tce-use-bnwm-57504",
+ "SR645 V3|7D9CCTO1WW", "proven",
+ "SR645 V3: BP8M Intel E810-DA4 4x SFP28 PCIe was TCE on the 2026-09-29 price date and off TCE by 2026-10-01; BNWM Broadcom 57504 4x SFP28 PCIe is the TCE swap and costs less",
+ "Two DCSC exports of the same SR645 V3 build, two days apart. Price date 29-Sep-26: BP8M 'ThinkSystem Intel E810-DA4 10/25GbE SFP28 4-Port PCIe Ethernet Adapter' with BU1E present. Price date 01-Oct-26: BP8M was no longer TCE, and swapping it for BNWM 'ThinkSystem Broadcom 57504 10/25GbE SFP28 4-port PCIe Ethernet Adapter' kept BU1E. BNWM lists about 43 percent below BP8M, so the swap also lowers the price. "
+ "Same port count, speed and form factor (4x 10/25GbE SFP28, PCIe, same BLKF x16/x16 riser), so it is a like-for-like swap for Hyper-V/VMware hosts. BNWM is also TCE-proven on SR630 V4, SR650 V4, HX650 V4 and HX630 V4. Neither card ships with optics or DACs; BYBJ Finisar 10G/25G SR SFP28 is TCE-proven on SR645 V3. "
+ "FLAGGED, one export pair: on the same two price dates every service line rose exactly 25% with no edit to services (Premier NBD 60 mo, KYD 60 mo and the CO2 offset all +25.0%). Treat it as a likely 2026-10-01 service list change and re-price any quote exported before 10-01. "
+ "Another case for topic tce-membership-is-per-mtm-and-per-date: re-check BU1E on the day the order is placed.",
+ "DCSC exports, SR645 V3, price dates 2026-09-29 and 2026-10-01", "2026-10-01"),
+
+("sql-server-standard-server-cal-one-license-per-vm",
+ "ALL|SQL Server 2025|Windows Server 2025", "proven",
+ "SQL Server Standard Server + CAL: one server license per SQL VM (one instance each), no SA needed; CALs cover every licensed SQL server; Windows Standard covers 2 VMs per full core stack",
+ "Microsoft SQL Server 2025 Licensing Guide (Feb 2026), Server + CAL use rights: 'You may run one instance of SQL Server in a single physical OSE or virtual OSE for each server license acquired' and server licenses stack. So N SQL VMs on one host = N server licenses (more if a VM runs a second instance). "
+ "SA IS NOT REQUIRED for Server + CAL in a VM. The SA/subscription requirement to license by VM applies to the PER CORE model only (since SQL 2022, unchanged in 2025). Without SA: the license stays assigned to the host (90-day rule, no VM mobility across the farm) and there are NO passive failover/DR replica rights, so a replica on a second host needs its own license. "
+ "CALs: 'A user or device assigned a single CAL can access more than one licensed SQL Server', so one CAL count covers every SQL VM. CAL version must match or exceed the server version. "
+ "LENOVO CODES (lp1079): SEJB 'Microsoft SQL Server 2025 Standard - English' is metered 'Per Physical or Virtual Server'; the add-on is SEJJ 'Microsoft SQL Server 2025 Standard Additional Server License' (CTO, for config only); SEJ1 is the per-4-core variant, SEJK the 2-core add-on; SELL 5-device CAL, SELS 5-user CAL. Lenovo OEM COAs are tied to the original hardware. "
+ "STANDARD EDITION CAP: the 2025 guide says 32 cores (hardware threads when licensed by VM); lp1079 still prints the 2022 figure (24 cores / 128GB), so quote the Microsoft number. "
+ "WINDOWS CROSS-CHECK on the same quote: Standard needs every physical core licensed per pair of VMs, so a 64-core host running 6 Windows VMs needs 3 x 64 = 192 core licenses (1 x 16-core base + 11 x 16-core additional). See topics windows-server-16-core-minimum-per-server and hypervisor-is-free-guest-windows-is-the-cost.",
+ "Microsoft SQL Server 2025 Licensing Guide (Feb 2026 copy); Lenovo Press lp1079 pp11-13; DCSC export 2026-09-29", "2026-10-01"),
 
 ("windows-server-essentials-vs-standard-plus-cals-under-25-users",
  "SR250 V3|ST250 V3|Windows Server 2025", "proven",

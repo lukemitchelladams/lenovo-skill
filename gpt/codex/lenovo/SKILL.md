@@ -13,7 +13,8 @@ description: Answer any Lenovo data center hardware question from verified evide
 
 ```bash
 KB=~/.codex/skills/lenovo/scripts/kb/kb.py
-python $KB fact "<terms>"                          # curated verified facts: run first
+python $KB ask "<the question>" [--mtm X]           # FAST PATH: one call, every linked source: run first
+python $KB fact "<terms>"                          # curated verified facts
 python $KB rules --fc <FC>                          # MTMs/sections holding a feature code + TCE flag
 python $KB rules "<model|MTM>" --required           # DCSC required sections
 python $KB dfind "<model|MTM>" "<regex>" [--tce]    # complete DCSC option list of an MTM
@@ -26,6 +27,10 @@ python $KB check <lenovo-bom|DCSC .xlsx> [--mtm X] [--nodes N] [--tce]   # rule 
 
 If `LENOVO_KB_DB` is set, it points at the user's personal KB of their own DCSC exports, and `part`, `tce`, `find`, `errors`, `docs` and `sql` then work too. If a command fails, say so and use `references/`.
 
+## Fast path
+
+For a plain question, run `ask` once with the question verbatim. It classifies the question and prints ROUTE (intent and sources), GAPS (what is missing) and NEXT (`answer now`, `ask the user first` or `BUILD PATH`). Obey NEXT, then answer from its brief in 2 to 6 lines, tagging each claim proven, flagged or unknown, with its source. Run more lookups only if the brief is empty or contradictory, or the user asks for the proof.
+
 ## Source hierarchy
 
 1. A live DCSC export the user provides.
@@ -36,7 +41,7 @@ If `LENOVO_KB_DB` is set, it points at the user's personal KB of their own DCSC 
 
 ## Workflow
 
-- **"Is X TCE?"** Run `fact` + `rules --fc` + the guide's TCE column. Date every source. Only BU1E in a live export proves it.
+- **"Is X TCE?"** Run `ask` (it combines `fact`, `rules --fc` and the guide's TCE column). Date every source. Only BU1E in a live export proves it.
 - **"Will this build?"** Run `check` on the BOM file, then `gates` for related DCSC messages.
 - **Competitor BOM:** run `match`, then refine: pick one code per line with `fact`, `dfind` and `spec`, and list what remains to confirm. Never invent a feature code the tools did not return.
 - **DCSC export:**

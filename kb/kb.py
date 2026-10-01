@@ -6,6 +6,7 @@ has zero Critical messages, that part is PROVEN TCE-buildable on that MTM.
 Everything else is "not seen", which is not the same as "not available".
 
 usage:
+  python kb.py ask "<question>" [--mtm X] [--deep]   FAST PATH: one call, every linked source, compact brief
   python kb.py fact <terms> [--titles]  curated hand-verified rules, top 3 (--titles: top 8 titles only)
                                       works even with no db built (falls back to kb_facts.py)
   python kb.py docs <query> [--lp lpNNNN]  full-text search of the Lenovo Press page index
@@ -261,7 +262,7 @@ def cmp(a,b):
         if A[k][0]!=B[k][0]: print(f"    {k:<7} {A[k][0]:.0f} -> {B[k][0]:.0f}   {A[k][1][:52]}")
 
 # commands served by sibling modules; each gets the full argv (command included)
-MODULES = {"rules": "dcsc_rules", "gates": "dcsc_rules", "models": "dcsc_rules", "dfind": "dcsc_rules",
+MODULES = {"ask": "ask", "rules": "dcsc_rules", "gates": "dcsc_rules", "models": "dcsc_rules", "dfind": "dcsc_rules",
            "check": "rules", "spec": "specs", "parts": "press_parts", "compete": "compete", "match": "match"}
 
 if __name__ == "__main__":

@@ -345,7 +345,8 @@ def candidates(db, mtm, cat, s, tce_first=True, n=3):
     if not rx:
         return []
     seen, out = set(), []
-    for tab, sub, sec, c, d, mn, mx, tc, wd, ty in dcsc_rules.options(db, mtm):
+    for o in dcsc_rules.options(db, mtm):
+        tab, sub, sec, c, d, mn, mx, tc, wd, ty = o[:10]
         if not re.search(rx, sec, I) or c in seen or wd:
             continue
         if cat == "drive" and _ok(d, r"M\.2|7mm"): continue

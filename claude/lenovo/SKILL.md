@@ -13,7 +13,8 @@ The folder next to this file, `scripts/kb/`, holds Python tools plus data: the D
 
 ```bash
 KB=~/.claude/skills/lenovo/scripts/kb/kb.py
-python $KB fact "<terms>"                     # 160+ curated verified facts (run this FIRST)
+python $KB ask "<the question>" [--mtm X]      # FAST PATH: one call, every linked source, compact brief (run this FIRST)
+python $KB fact "<terms>"                     # 160+ curated verified facts
 python $KB rules --fc <FC>                     # every MTM/section holding a feature code, TCE flag, min/max
 python $KB rules "<model|MTM>" --required      # DCSC required sections for a platform
 python $KB dfind "<model|MTM>" "<regex>" [--tce]   # search the COMPLETE DCSC option list of an MTM
@@ -26,6 +27,21 @@ python $KB check <lenovo-bom file|DCSC .xlsx> [--mtm X] [--nodes N] [--tce]   # 
 
 On Windows PowerShell, use `$env:USERPROFILE\.claude\skills\lenovo\scripts\kb\kb.py`. If the user has built a personal KB from their own DCSC exports, the environment variable `LENOVO_KB_DB` points at it, and `part`, `tce`, `find`, `errors`, `configs`, `docs` and `sql` then answer from their quote history. If a command fails, say so and fall back to `references/`. Do not pretend it was checked.
 
+## Fast path: plain questions take ONE call
+
+Run `ask` with the user's question, verbatim. It first classifies the question (tce, aix, error, price, lifecycle, compete, spec, compat, build, concept) and runs only the sources that intent needs. It prints three lines:
+- **ROUTE:** the intent and the sources used
+- **GAPS:** what is missing, such as the exact DCSC error text, or which platform
+- **NEXT:** `answer now`, `ask the user first` or `BUILD PATH`
+
+Obey NEXT. It picks out the feature codes, MTMs and model names, follows their links, and returns one compact brief in under a second:
+- the facts naming them
+- DCSC rules per MTM and section (TCE flag, `/AIX` = AI Express, min/max, withdraw date)
+- TCE proof from a personal KB, if one is built
+- guide part tables and gating messages
+
+Answer from it in 2 to 6 lines. Tag each claim proven, flagged or unknown, with its source. Do not walk through the evidence or run more lookups unless the brief is empty or contradictory, or the user asks for the proof. Builds and BOM conversions use the workflow below.
+
 ## Source hierarchy, highest authority first
 
 1. **A live DCSC export the user just gave you.** It is ground truth for that config on that date. If they have one, ask for it.
@@ -37,10 +53,8 @@ On Windows PowerShell, use `$env:USERPROFILE\.claude\skills\lenovo\scripts\kb\kb
 ## Workflow
 
 - **"Is X TCE?" / "Does X fit Y?"**
-  1. Run `fact X`.
-  2. Run `rules --fc X`. It shows the TCE flag per MTM and section.
-  3. Check the product guide's TCE column.
-  4. Answer with the date of each source and say that only BU1E in a live export proves it.
+  1. Run `ask "<question>"`. It already combines `fact`, `rules --fc` and the guide's TCE column.
+  2. Answer with the date of each source and say that only BU1E in a live export proves it.
 - **"Will this build?"** Save the BOM to a file and run `check`. Then explain each block and warning, and run `gates` for any related DCSC message.
 - **Competitor BOM:**
   1. Save it to a file and run `match`. It picks the platform, proposes up to 3 real feature codes per line (TCE first), lists forced companions and runs the validators.

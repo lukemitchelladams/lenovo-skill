@@ -10,6 +10,24 @@
 
 FACTS = [
 
+("de4200h-sas-host-attach-needs-hic-and-440-16e",
+ "DE4200H|DE Series|SR635 V3|SR645 V3|SR630 V4|SR650 V4|440-16e|940-8e", "proven",
+ "Direct SAS-attaching a host to a DE4200H needs a 12Gb SAS HIC in each DE controller (C3HQ) AND an external SAS HBA in the host (440-16e B8P7), never a RAID adapter; 'Hybrid SAS' in the name is the drive side",
+ "DE4200H out of the box has only 4x 10/25Gb iSCSI base ports (2 per controller, lp2071 p7). The two 12Gb SAS x4 ports on each controller are EXPANSION ports "
+ "for DE240S/DE600S shelves (lp2071 p5), not host ports, so 'Hybrid SAS 2U24' describes the drives, not host connectivity. A DCSC export with C3HX "
+ "'Blank HIC Blank Face Plate' has no SAS host port at all. HIC choices (lp2071 p11, one per controller, max 2): C3HQ 12Gb SAS 4-port (TCE), BWTF 16/32Gb FC "
+ "4-port (TCE), BWTH 10GBASE-T 4-port (TCE), BWTK 25/10GbE 4-port (Not TCE); DCSC also has a host-connectivity selector (B4D9 SAS, B4DB 10G BaseT iSCSI, "
+ "B4DC iSCSI optical). HOST SIDE for SAS: an external HBA, B8P7 ThinkSystem 440-16e (TCE on SR635 V3, lp1609 p67; 440-8e BNWK is Not TCE there). "
+ "Do NOT use the RAID 940-8e (BNWJ): its supported external enclosures are the D1212/D1224/D3284/D4390 JBODs only (lp1586 p3) - the DE controllers do the RAID. "
+ "CABLES (lp2071 p12, controller-to-host, TCE): AU16 0.5m, AU17 1m, AU18 2m, AU19 3m External MiniSAS HD 8644/8644. Order them on the HOST config, not the DE: the DE4200H CTO offers no cables in DCSC (rules snapshot 2026-09-30), while server CTOs carry them (BU1E SR630 V4 exports with AU19 alongside an external HBA). The SR635 V3 default option list does not show AU16-AU19 either, so confirm they appear once the 440-16e is selected (flagged). "
+ "PORT MATH: two C3HQ = 8 SAS host ports = up to 4 hosts dual-path with no switch; the 4 iSCSI base ports dual-path only 2 hosts without a switch. "
+ "iSCSI over the base ports needs no host adapter at all (the hosts' 10/25GbE NICs) but does need SFP28 modules or DACs on both ends. "
+ "Confirm the OS and HBA combination in LSIC (lp2071 p33). "
+ "DCSC MECHANICS: the host-connectivity selector (NETWORK_ADAPTER_CFC) and the HIC section are NOT required; iSCSI on the base ports needs no line at all, only the "
+ "base-port optics (B4K9 10G, B4B4 or C4K4 25G, selectable without a HIC). The HIC list stays locked (q=[0]) until a connectivity type is picked. "
+ "PROVEN both ways: a DE4200H export with 2x C3HX blank HICs (iSCSI base ports) and one with 2x C3HQ SAS HICs both carried BU1E with 0 criticals (2026-07/08).",
+ "Lenovo Press lp2071 p5/p7/p11/p12/p33, lp1609 p67, lp1586 p3; DCSC rules crawl 2026-09-30; DCSC exports 2026-07 to 2026-09", "2026-10-01"),
+
 ("hx-sizer-nic-to-dcsc-mapping-ocp-mandatory",
  "HX630 V4|HX650 V4|Nutanix Sizer", "proven",
  "Nutanix Sizer NIC lines do not build as written on HX: the OCP slot is mandatory, ConnectX-6 Lx has no 10GBASE-T, and Sizer ships zero optics",

@@ -97,7 +97,7 @@ def gates_md(db):
     return '\n'.join(out)
 
 
-TOOL_FILES = ['paths.py', 'kb.py', 'kb_facts.py', 'kb_facts_rules.py', 'kb_facts_field.py', 'dcsc_rules.py', 'rules.py',
+TOOL_FILES = ['paths.py', 'kb.py', 'ask.py', 'kb_facts.py', 'kb_facts_rules.py', 'kb_facts_field.py', 'dcsc_rules.py', 'rules.py',
               'specs.py', 'match.py', 'compete.py', 'press_parts.py', 'build_kb_index.py']
 
 
@@ -107,6 +107,8 @@ def copy_tools(dest):
     for f in TOOL_FILES:
         shutil.copy2(os.path.join(KB, f), os.path.join(dest, f))
     for f in glob.glob(os.path.join(KB, 'data', '*')):
+        if f.endswith(('.sqlite', '.sqlite-journal')):  # local caches (ask.py rebuilds its index on first use)
+            continue
         shutil.copy2(f, os.path.join(dest, 'data', os.path.basename(f)))
 
 

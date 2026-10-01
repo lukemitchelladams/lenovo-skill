@@ -51,7 +51,7 @@ The KB lives at `kb/dcsc_kb.sqlite` (override with `LENOVO_KB_DB`).
 ## Schema
 
 - `config(id, file, name, mtime, mtm, model, nodes, tce, criticals, total, sig)`: `tce=1` means the export carried **BU1E**.
-- `part(cfg, fc, descr, qty, unit, cat)`: `unit` is the per-unit price; `qty` is the total across all nodes.
+- `part(cfg, fc, descr, qty, unit, cat, priced)`: `unit` is the per-unit price; `qty` is the total across all nodes. `priced=0` marks a line whose price cell was blank (a CTO-rollup component) or "No charge"; it is stored at `unit` 0.0, so filter `unit>0` when reading prices.
 - `msg(cfg, severity, text)`: DCSC warnings and criticals.
 - `fact` / `fact_fts`: curated rules.
 - `doc_fts(lp, title, page, text)`: the Lenovo Press corpus, one row per page.
